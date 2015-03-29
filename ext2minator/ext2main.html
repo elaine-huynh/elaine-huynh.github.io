@@ -1,0 +1,401 @@
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/blue.css">
+        <script src="http://code.jquery.com/jquery-1.11.2.js" type="text/javascript" charset="utf-8"></script>
+	<script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js" type="text/javascript" charset="utf-8"></script>
+        <script src="src/error.js"></script>
+        <script src="src/bitmap.js"></script>
+        <script src="src/generator.js"></script>
+        <script src="src/super_block.js"></script>
+        <script src="src/data_block.js"></script>
+        <script src="src/file_data.js"></script>
+        <script src="src/directory_data.js"></script>
+        <script src="src/indirect_data.js"></script>
+        <script src="src/inode.js"></script>
+        <script src="src/reserved_inode.js"></script>
+        <script src="src/file_system.js"></script>
+        <script src="src/shell.js"></script>
+        <script type="text/javascript">
+            var fileSystem = new FileSystem(20000, 20000);
+			var step = 0;
+
+			// Reject messages unless it matches this exact phrase in steps 1, 2, and whatever
+			// the last one is. :)
+			var never_type_me = "05asd]njasdhb[gfdhgbgbrhjbgregbeh85bgrhjgfdjbfbfdhb4y234@$2n24!"
+			var commands = [never_type_me, never_type_me, "help", "mkfile HelloWorld.txt 1000", "ls", "display inode 2", "display block 10",
+							"display inode 11", "display block 11", "mkdir potatoSack", "cd potatoSack", "ls", 
+							"mkfile potato 1000000", "display inode 13", "display block 26", "display block 100",
+							"display block 101", "display block 102", "display block 103", "display block 26", never_type_me];
+	
+			/**
+			* Changes the tutorial display and step integer based on the point the tutorial has reached.
+			*
+			* @param {}
+			* @returns {null}
+			*/
+			function runStep() {
+				switch(step) {
+					case 0:
+						step = 1;
+						console.log("step 0");
+                        /* Added quit button */
+						$('#tutorial').html("Let's start with the user interface.<br>The two boxes at the top will" +
+											" help you see the inode " + 
+											"and data block bitmaps on the disk.<br><br><br>" +
+											"<a href=\"#\" class=\"window tutbutton\" onClick=\"runStep();\">OK</a>");
+						$('#inodebitmap').effect("highlight", {color: '559CFF'}, 1000);
+						$('#blockbitmap').effect("highlight", {color: '559CFF'}, 1000);
+						break;
+					case 1:
+						step = 2;
+						console.log("step 1");
+						$('#tutorial').html("The dark box on the left is your shell console, loosely based on the" +
+											" shell found in Linux, where you will input your commands.<br><br>" + 
+											"Type \"help\" to see a reference of available commands.<br><br>" +
+											"<a href='index.html' class='window tutbutton'>quit</a>");
+						$('.shellcontent').effect("highlight", {color: '559CFF'}, 1000);
+						break;
+					case 2:
+						step = 3;
+						console.log("step 2");
+						$('#tutorial').html("Let's try creating a new file with 1000 bytes (ext2minator will" + 
+											" generate text to fill those bytes).<br><br>Type " + 
+											"\"mkfile HelloWorld.txt 1000\".<br><br>" +
+											"<a href='index.html' class='window tutbutton'>quit</a>");
+						break;
+					case 3:
+						step = 4;
+						console.log("step 3");
+						$('#tutorial').html("Good job! Let's take a look at our root directory now.<br><br>" + 
+											"Type in \"ls\" to see a list of files and directories in your" +
+											" current directory (root).<br><br>" +
+											"<a href='index.html' class='window tutbutton'>quit</a>");
+						break;
+					case 4:
+						step = 5;
+						console.log("step 4");
+						$('#tutorial').html("The root directory can be found at inode 2.<br><br>" +
+											"To display it, type \"display inode 2\".<br><br>" +
+											"<a href='index.html' class='window tutbutton'>quit</a>");
+						break;
+					case 5:
+						step = 6;
+						console.log("step 5");
+						$('#tutorial').html("To see what is listed in the directory, we'll take a look at " +
+											"block 10.<br><br> Type \"display block 10\" (or click on \"Direct Block Pointer 0\").<br><br>" +
+											"<a href='index.html' class='window tutbutton'>quit</a>");
+						break;
+					case 6:
+						step = 7;
+						console.log("step 6");
+						$('#tutorial').html("Notice how, in the block view, each directory or file has the inode" +
+											" index where it's stored written next to it.<br>" +
+											"Now we'll take a look at the \"HelloWorld.txt\" file we made earlier.<br><br>" +
+											"Type \"display inode 11\" (the inode number returned after creating" +
+											" the file).<br><br>" +
+											"<a href='index.html' class='window tutbutton'>quit</a>");
+						break;
+					case 7:
+						step = 8;
+						console.log("step 7");
+						$('#tutorial').html("Note: if the block number is zero, that block is empty.<br>" +
+											"Here, we can see that the first block (block 11) contains the data" +
+											" we want to see.<br>The file system will often divide the file into" +
+											" multiple blocks if it is too large for one block.<br>" +
+											"As a result, you may end up with blocks pointing to other blocks -- these are known as <i>indirect block pointers</i>.<br><br>" +
+											"Type \"display block 11\" (or click on \"Direct Block Pointer 0\") to see what's inside our generated file.<br><br>" +
+											"<a href='index.html' class='window tutbutton'>quit</a>");
+						break;
+					case 8:
+						step = 9;
+						console.log("step 8");
+						$('#tutorial').html("Well done! Now you know how to create files.<br>" +
+											"Now let's create a directory using the mkdir command.<br><br>" +
+											"Type \"mkdir potatoSack\".<br><br>" +
+											"<a href='index.html' class='window tutbutton'>quit</a>");
+						break;
+					case 9:
+						step = 10;
+						console.log("step 9");
+						$('#tutorial').html("To move into the new directory, type \"cd potatoSack\".<br><br>" +
+											"<a href='index.html' class='window tutbutton'>quit</a>");
+						break;
+					case 10:
+						step = 11;
+						console.log("step 10");
+						$('#tutorial').html("Congratulations! Now you're inside the potatoSack!<br>" +
+											"Let's take a look at what we have here...<br><br>" +
+											"Type \"ls\".<br><br>" +
+											"<a href='index.html' class='window tutbutton'>quit</a>");
+						break
+					case 11:
+						step = 12;
+						console.log("step 11");
+						$('#tutorial').html("Uh oh. Looks like our potatoSack is empty.<br>"+
+											"Let's remedy this by using our magical shell skills to add a potato.<br><br>" +
+											"Type \"mkfile potato 1000000\" to make a giant potato (and flip a bunch of 0s into 1s).<br><br>" +
+											"<a href='index.html' class='window tutbutton'>quit</a>");
+						break;
+					case 12:
+						step = 13;
+						console.log("step 12");
+						$('#tutorial').html("According to the shell, potato generation was a success!<br>"+
+											"Now we can look at our beautiful potato.<br><br>" +
+											"Type \"display inode 13\" to gaze upon thine potato.<br><br>" +
+											"<a href='index.html' class='window tutbutton'>quit</a>");
+						break;
+					case 13:
+						step = 14;
+						console.log("step 13");
+						$('#tutorial').html("Apparently our potato was so big that it ended up using indirect block pointers. Neat.<br>" +
+											"We can see several direct blocks that contain parts of the text" +
+											" generated, as well as several indirect blocks pointing to more" +
+											" datablocks.<br><br>" +
+											"To see what the single indirect block pointer stores," +
+											" type \"display block 26\" (or click on the \"Single Indirect Block Pointer\").<br><br>" +
+											"<a href='index.html' class='window tutbutton'>quit</a>");
+						break;
+					case 14:
+						step = 15;
+						console.log("step 14");
+						$('#tutorial').html("So many numbers! Each number represents a block of data used by the potato you've made.<br>" +
+											"Let's go through a few!<br><br>" +
+											"Type \"display block 100\" to see what's in it.<br><br>" +
+											"<a href='index.html' class='window tutbutton'>quit</a>");
+						break;
+					case 15:
+						step = 16;
+						console.log("step 15");
+						$('#tutorial').html("Hm... Looks like we're in the middle of something.<br><br>" + 
+											"Type \"display block 101\" to see what comes next.<br><br>" +
+											"<a href='index.html' class='window tutbutton'>quit</a>");
+						break;
+					case 16:
+						step = 17;
+						console.log("step 16");
+						$('#tutorial').html("Cool, this block is the continuation of block 100.<br>" +
+											"If you keep going down the list of blocks, you'll get to see more and more text.<br><br>" +
+											"Type \"display block 102\".<br><br>" +
+											"<a href='index.html' class='window tutbutton'>quit</a>");
+						break;
+					case 17:
+						step = 18;
+						console.log("step 17");
+						$('#tutorial').html("Type \"display block 103\".<br><br>" +
+											"<a href='index.html' class='window tutbutton'>quit</a>");
+						break;
+					case 18:
+						step = 19;
+						console.log("step 18");
+						$('#tutorial').html("You could keep going down the list, but I think you get the point.<br>" +
+											"..wait, where did the list go?<br><br>" +
+											"Type \"display block 26\" to bring back that list of block pointers!<br><br>" +
+											"<a href='index.html' class='window tutbutton'>quit</a>");
+						break;
+					case 19:
+						step = 20;
+						console.log("step 19");
+						$('#tutorial').html("Well done! Now that we've covered all the basics, you're " +
+											"ready to experiment on your own.<br><br>" +
+											"Don't forget: you can enter \"help\" in the shell if you need to see a list of commands available to you!<br><br>" +
+											"<a href='ext2minator.html' class='window tutbutton'>continue</a>");
+						break;
+				}
+			}
+            function writeLine(value) {
+                var oldshell = $("#shell").html();
+                var newtext = oldshell + value + "<br/>";
+                $("#shell").html(newtext);
+                $("#shell").scrollTop($("#shell")[0].scrollHeight);
+            }
+            var readQueue = [];
+            function readLine(callback) {
+                readQueue.push(callback);
+            }
+            function refreshDisplay(){
+                var allIDs = [];
+                var allcontent = $('.boxcontent').each(function (){
+                    var i = this.id;
+                    allIDs.push(this.id);
+                });
+                for (var i in allIDs){
+                    var refreshedData = getData("#"+allIDs[i]);
+                    if (refreshedData){
+                        refreshedData = refreshedData.replace(/\n/g, "<br />")
+                        replaceData("#"+allIDs[i], refreshedData);
+                    }
+                }
+                
+            }
+            function replaceData(id, data){
+                $(id).html(data);
+            }
+            function getData(id){
+                var str = id.slice(1).split("-");
+                var type = str[0];
+                var n = str[1];
+                var content = ""
+                if (type === "inode"){
+                    return fileSystem.getInode(n).toDisplay();
+                }
+                else if (type === "data"){
+                    return fileSystem.getDataBlock(n).toDisplay();
+                }
+            }
+            function display(result) {
+                result = result.replace(/\n/g, "<br />");
+                if ($('#box1').html() === ""){
+                    $('#box1').html(result);
+                }else if ($('#box2').html() === ""){
+                    $('#box2').html(result);
+                }else if ($('#box3').html() === ""){
+                    $('#box3').html(result);
+                }else if ($('#box4').html() === ""){
+                    $('#box4').html(result);
+                }else{
+                    $('#box1').html($('#box2').html());
+                    $('#box2').html($('#box3').html());
+                    $('#box3').html($('#box4').html());
+                    $('#box4').html(result);
+                }
+            }
+            var programs = createPrograms(fileSystem, writeLine, readLine, display);
+            programs["shell"]();
+            $(document).ready(function() {
+                $('#inodebitmap').text(fileSystem.inodeBitmap.display());
+                $('#blockbitmap').text(fileSystem.blockBitmap.display());
+                $('.command').keydown(function(event) {
+                    if (event.keyCode === 13) {
+                        if (readQueue.length > 0) {
+                            var input = $('.command').val();
+							// make sure the user is following the tutorial
+							if (input == commands[step]) {
+								if (input == "help") {
+									document.getElementById('light').style.display='block';
+									document.getElementById('fade').style.display='block';
+								} else {
+									try {
+										readQueue.shift()(input);
+									} catch (e) {
+										// If we get here, then we have a bug.
+										runShell(fileSystem, writeLine, readLine);
+										throw e;
+									}
+									$('#inodebitmap').text(fileSystem.inodeBitmap.display());
+									$('#blockbitmap').text(fileSystem.blockBitmap.display());
+							    	refreshDisplay();
+								}
+								$('.command').val("");
+								runStep();
+							}
+                        }
+                    }
+                });
+                $('body').on('click', '#blockpointer', function (){
+                    var str = $(this).html().split(" ");
+                    if (fileSystem.getDataBlock(str[str.length - 1]).data != null &&
+						"display block " + str[str.length - 1] == commands[step]) {
+                        programs["display"](["block", str[str.length - 1]]);
+						runStep();
+					}
+                });
+
+                // Colour scheme stuff:
+                var css = "blue";
+                $('body').on('click', '#original', function(){
+                    $('link[href="stylesheets/'+css+'.css"').attr('href','stylesheets/blue.css');
+                    css = "blue";
+                });
+                $('body').on('click', '#beige', function(){
+                    $('link[href="stylesheets/'+css+'.css"').attr('href','stylesheets/beige.css');
+                    css = "beige";
+                });
+                $('body').on('click', '#cerise', function(){
+                    $('link[href="stylesheets/'+css+'.css"').attr('href','stylesheets/cerise.css');
+                    css = "cerise";
+                });
+            });
+        </script>
+    </head>
+    <body>
+	<div style="float:right">
+        <div class="round-button" id="beige" style="background:#BA9661"></div>
+        <div class="round-button" id="cerise" style="background:#C42150"></div>
+        <div class="round-button" id="original" style="background:#2D72B3"></div>
+	</div><br>
+    <div style="height:60%">
+		<div id="tutorial" class="window">
+			Welcome to ext2minator!<br> <br>
+			ext2minator is a simple tool that simulates and visualizes the <a href="http://wiki.osdev.org/Ext2" target="_blank" class="introlink">ext2 file system</a> used in older versions of Linux.<br><br>For the lost and weary souls who aren't sure where to begin: we recommend trying out the tutorial!<br><br>Please make a selection to continue.<br>
+
+            <!--<p>For a list of commands: 
+            <a href = "javascript:void(0)" onclick = "document.getElementById('light').style.display='block';
+            document.getElementById('fade').style.display='block'" class="window" style="padding:7 25 7 25; 
+            background-color:gray;">help</a>
+            </p>--> <br>
+			
+			<a href="#" class="window tutbutton" onClick="runStep();">start tutorial</a>
+			<a href="ext2minator.html" class="window tutbutton">skip</a>
+		</div>
+
+        <div id="light" class="white_content"><hgroup><h1><center>COMMANDS</center></h1>
+                                            <h2>* Enter the following commands to create directories and files. <br>
+                                            * Click on "?" or type "help" to display this window again. </h2>
+                                            </hgroup>
+                                            <span class ="helpfont">$ mkdir [directory] </span>: Create new directory<br>
+                                            <span class ="helpfont">$ cd [path]</span> : Change directory<br>
+                                            <span class ="helpfont">$ mkfile [filename] [size]</span>  : Make a new text file with given size<br>
+                                            <span class ="helpfont">$ display inode [number]</span>  : Displays inode structure <br>
+                                            <span class ="helpfont">$ display block [number]</span>  : Displays data block structure <br>
+                                            <span class ="helpfont">$ rm [-r] [directory]</span> : Removes directory<br>
+                                            <span class ="helpfont">$ ls [path]</span> : Lists all the directories and files <br>
+                                            <span class ="helpfont">$ ln [source] [destination]</span> : Creates a link <br>
+                                            <span class ="helpfont">$ help</span> : Display a list of available commands <br>
+         <br> <a href = "javascript:void(0)" onclick = "document.getElementById('light').style.display='none';
+         document.getElementById('fade').style.display='none'" class="window tutbutton">Close</a></div>
+        <div id="fade" class="black_overlay"></div>
+
+        <div class="wrapper">
+            <div class="shellwrapper">
+                <div class="window shellbox">
+                    <center><b>shell</b></center>
+                    <div class="shellcontent">
+                        <div class="shelloutput" id="shell">
+                        </div>
+                        <div class="shellcommand">
+                            $ <input class="command" type="text" name="q" placeholder="Enter command">
+							<a href="#" onclick = "document.getElementById('light').style.display='block';
+							document.getElementById('fade').style.display='block'" style="font-weight:bold; 
+							float:right; font-size:15">?</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="contentwrapper">
+                <div class="bitmapwrapper">
+                    <div class="window bitmap">
+                        <center><b>inode bitmap</b></center>
+                        <div class="bitmapcontent" id="inodebitmap"></div>
+                    </div>
+                    <div class="window bitmap">
+                        <center><b>block bitmap</b></center>
+                        <div class="bitmapcontent" id="blockbitmap"></div>
+                    </div>
+                </div>
+                <div class="blank"></div>
+                <div class="blank"></div>
+                <div class="datawrapper">
+                    <div class="window box" id="box1">
+                    </div>
+                    <div class="window box" id="box2">
+                    </div>
+                    <div class="window box" id="box3">
+                    </div>
+                    <div class="window box" id="box4">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </body>
+</html>

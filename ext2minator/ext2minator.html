@@ -1,0 +1,194 @@
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/blue.css">
+        <script src="http://code.jquery.com/jquery-1.11.2.js" type="text/javascript" charset="utf-8"></script>
+        <script src="src/error.js"></script>
+        <script src="src/bitmap.js"></script>
+        <script src="src/generator.js"></script>
+        <script src="src/super_block.js"></script>
+        <script src="src/data_block.js"></script>
+        <script src="src/file_data.js"></script>
+        <script src="src/directory_data.js"></script>
+        <script src="src/indirect_data.js"></script>
+        <script src="src/inode.js"></script>
+        <script src="src/reserved_inode.js"></script>
+        <script src="src/file_system.js"></script>
+        <script src="src/shell.js"></script>
+        <script type="text/javascript">
+            var fileSystem = new FileSystem(20000, 20000);
+            
+            function writeLine(value) {
+                var oldshell = $("#shell").html();
+                var newtext = oldshell + value + "<br/>";
+                $("#shell").html(newtext);
+                $("#shell").scrollTop($("#shell")[0].scrollHeight);
+            }
+            var readQueue = [];
+            function readLine(callback) {
+                readQueue.push(callback);
+            }
+            function refreshDisplay(){
+                var allIDs = [];
+                var allcontent = $('.boxcontent').each(function (){
+                    var i = this.id;
+                    allIDs.push(this.id);
+                });
+                for (var i in allIDs){
+                    var refreshedData = getData("#"+allIDs[i]);
+                    if (refreshedData){
+                        refreshedData = refreshedData.replace(/\n/g, "<br />")
+                        replaceData("#"+allIDs[i], refreshedData);
+                    }
+                }
+                
+            }
+            function replaceData(id, data){
+                $(id).html(data);
+            }
+            function getData(id){
+                var str = id.slice(1).split("-");
+                var type = str[0];
+                var n = str[1];
+                var content = ""
+                if (type === "inode"){
+                    return fileSystem.getInode(n).toDisplay();
+                }
+                else if (type === "data"){
+                    return fileSystem.getDataBlock(n).toDisplay();
+                }
+            }
+            function display(result) {
+                result = result.replace(/\n/g, "<br />");
+                if ($('#box1').html() === ""){
+                    $('#box1').html(result);
+                }else if ($('#box2').html() === ""){
+                    $('#box2').html(result);
+                }else if ($('#box3').html() === ""){
+                    $('#box3').html(result);
+                }else if ($('#box4').html() === ""){
+                    $('#box4').html(result);
+                }else{
+                    $('#box1').html($('#box2').html());
+                    $('#box2').html($('#box3').html());
+                    $('#box3').html($('#box4').html());
+                    $('#box4').html(result);
+                }
+            }
+            var programs = createPrograms(fileSystem, writeLine, readLine, display);
+            programs["shell"]();
+            $(document).ready(function() {
+                $('#inodebitmap').text(fileSystem.inodeBitmap.display());
+                $('#blockbitmap').text(fileSystem.blockBitmap.display());
+                $('.command').keydown(function(event) {
+                    if (event.keyCode === 13) {
+                        if (readQueue.length > 0) {
+                            var input = $('.command').val();
+							if (input == "help") {
+								document.getElementById('light').style.display='block';
+								document.getElementById('fade').style.display='block';
+							} else {
+								try {
+									readQueue.shift()(input);
+								} catch (e) {
+									// If we get here, then we have a bug.
+									runShell(fileSystem, writeLine, readLine);
+									throw e;
+								}
+								
+								$('#inodebitmap').text(fileSystem.inodeBitmap.display());
+								$('#blockbitmap').text(fileSystem.blockBitmap.display());
+								refreshDisplay();
+							}
+							$('.command').val("");
+                        }
+                    }
+                });
+                $('body').on('click', '#blockpointer', function (){
+                    var str = $(this).html().split(" ");
+                    if (fileSystem.getDataBlock(str[str.length - 1]).data != null)
+                        programs["display"](["block", str[str.length - 1]]);
+                });
+
+                // Colour scheme stuff:
+                var css = "blue";
+                $('body').on('click', '#original', function(){
+                    $('link[href="stylesheets/'+css+'.css"').attr('href','stylesheets/blue.css');
+                    css = "blue";
+                });
+                $('body').on('click', '#beige', function(){
+                    $('link[href="stylesheets/'+css+'.css"').attr('href','stylesheets/beige.css');
+                    css = "beige";
+                });
+                $('body').on('click', '#cerise', function(){
+                    $('link[href="stylesheets/'+css+'.css"').attr('href','stylesheets/cerise.css');
+                    css = "cerise";
+                });
+            });
+        </script>
+    </head>
+    <body>
+    	<div style="float:right">
+        <div class="round-button" id="beige" style="background:#BA9661"></div>
+        <div class="round-button" id="cerise" style="background:#C42150"></div>
+        <div class="round-button" id="original" style="background:#2D72B3"></div>
+    	</div>
+    	<div class="ext2title">ext2minator</div>
+		<div id="light" class="white_content"><hgroup><h1><center>COMMANDS</center></h1>
+                                            <h2>* Enter the following commands to create directories and files. <br>
+                                            * Click on "?" or type "help" to display this window again. </h2>
+                                            </hgroup>
+                                            <span class ="helpfont">$ mkdir [directory] </span>: Create new directory<br>
+                                            <span class ="helpfont">$ cd [path]</span> : Change directory<br>
+                                            <span class ="helpfont">$ mkfile [filename] [size]</span>  : Make a new text file with given size<br>
+                                            <span class ="helpfont">$ display inode [number]</span>  : Displays inode structure <br>
+                                            <span class ="helpfont">$ display block [number]</span>  : Displays data block structure <br>
+                                            <span class ="helpfont">$ rm [-r] [directory]</span> : Removes directory<br>
+                                            <span class ="helpfont">$ ls [path]</span> : Lists all the directories and files <br>
+                                            <span class ="helpfont">$ ln [source] [destination]</span> : Creates a link <br>
+                                            <span class ="helpfont">$ help</span> : Display a list of available commands <br>
+         <br> <a href = "javascript:void(0)" onclick = "document.getElementById('light').style.display='none';
+         document.getElementById('fade').style.display='none'" class="window tutbutton">Close</a></div>
+        <div id="fade" class="black_overlay"></div>
+		
+        <div class="wrapper">
+            <div class="shellwrapper">
+                <div class="window shellbox">
+                    <center><b>shell</b></center>
+                    <div class="shellcontent">
+                        <div class="shelloutput" id="shell">
+                        </div>
+                        <div class="shellcommand">
+                            $ <input class="command" type="text" name="q" placeholder="Enter command">
+							<a href="#" onclick = "document.getElementById('light').style.display='block';
+							document.getElementById('fade').style.display='block'" style="font-weight:bold; 
+							float:right; font-size:15">?</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="contentwrapper">
+                <div class="bitmapwrapper">
+                    <div class="window bitmap">
+                        <center><b>inode bitmap</b></center>
+                        <div class="bitmapcontent" id="inodebitmap"></div>
+                    </div>
+                    <div class="window bitmap">
+                        <center><b>block bitmap</b></center>
+                        <div class="bitmapcontent" id="blockbitmap"></div>
+                    </div>
+                </div>
+                <div class="blank"></div>
+                <div class="datawrapper">
+                    <div class="window box" id="box1">
+                    </div>
+                    <div class="window box" id="box2">
+                    </div>
+                    <div class="window box" id="box3">
+                    </div>
+                    <div class="window box" id="box4">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
