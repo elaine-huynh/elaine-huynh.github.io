@@ -69,3 +69,14 @@ IndirectData.prototype.toDisplay = function() {
     };
     return returnString;
 };
+
+IndirectData.prototype.hexDump = function() {
+    var returnString = "";
+	for(var i=0; i<this.data.length; i++) {
+		returnString += hexNumFour(this.data[i].toString(16));
+	}
+	while (returnString.length < 2048){
+		returnString += '00';
+	}
+    return returnString;
+};

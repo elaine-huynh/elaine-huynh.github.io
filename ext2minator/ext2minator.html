@@ -16,17 +16,23 @@
         <script src="src/shell.js"></script>
         <script type="text/javascript">
             var fileSystem = new FileSystem(20000, 20000);
+            var hexinode = [];
+            var hexdata = [];
+            var dispinode = [];
+            var dispdata = [];
             
             function writeLine(value) {
                 var oldshell = $("#shell").html();
-                var newtext = oldshell + value + "<br/>";
+                var newtext = oldshell + value + "<br>";
                 $("#shell").html(newtext);
                 $("#shell").scrollTop($("#shell")[0].scrollHeight);
             }
+            
             var readQueue = [];
             function readLine(callback) {
                 readQueue.push(callback);
             }
+            
             function refreshDisplay(){
                 var allIDs = [];
                 var allcontent = $('.boxcontent').each(function (){
@@ -34,22 +40,41 @@
                     allIDs.push(this.id);
                 });
                 for (var i in allIDs){
-                    var refreshedData = getData("#"+allIDs[i]);
+                    var refreshedData = getCurrentData("#"+allIDs[i]);
                     if (refreshedData){
-                        refreshedData = refreshedData.replace(/\n/g, "<br />")
+                        refreshedData = refreshedData.replace(/\n/g, "<br>")
                         replaceData("#"+allIDs[i], refreshedData);
                     }
                 }
                 
             }
+            
             function replaceData(id, data){
                 $(id).html(data);
             }
+
+            function getCurrentData(id){
+                var str = id.slice(1).split("-");
+                var type = str[0];
+                var n = str[1];
+                var content = "";
+                if (type === "inode" && !hexinode[n]){
+                    content = getData(id);
+                }
+                else if (type === "data" && !hexdata[n]){
+                    content = getData(id);
+                } else {
+                    content = getHex(id);
+                    content = spaceHex(content);
+                }
+                return content;
+            }
+            
             function getData(id){
                 var str = id.slice(1).split("-");
                 var type = str[0];
                 var n = str[1];
-                var content = ""
+                var content = "";
                 if (type === "inode"){
                     return fileSystem.getInode(n).toDisplay();
                 }
@@ -57,8 +82,46 @@
                     return fileSystem.getDataBlock(n).toDisplay();
                 }
             }
+
+            function getHex(id){
+                var str = id.slice(1).split("-");
+                var type = str[0];
+                var n = str[1];
+                var content = "";
+                if (type === "inode"){
+                    content = fileSystem.getInode(n).toHex();
+                    hexinode[n] = 1;
+                }
+                else if (type === "data"){
+                    content = fileSystem.getDataBlock(n).hexDump();
+                    hexdata[n] = 1;
+                }
+                return content;
+            }
+
+            function spaceHex(hex){
+                var result = "";
+                for (var i=0; i < hex.length; i++){
+                    result += hex[i];
+                    if (i != 1 && ((i+1) % 4== 0))
+                        result += " ";
+                }
+                return result;
+            }
+            
             function display(result) {
-                result = result.replace(/\n/g, "<br />");
+                result = result.replace(/\n/g, "<br>");
+                var id = $(result).attr('id').slice(1);
+                var str = id.split("-");
+                var type = str[0];
+                var n = str[1];
+                
+                if (type === "inode" && dispinode[n]){
+                    return;
+                }
+                else if (type === "data" && dispdata[n]){
+                    return;
+                }
                 if ($('#box1').html() === ""){
                     $('#box1').html(result);
                 }else if ($('#box2').html() === ""){
@@ -68,12 +131,30 @@
                 }else if ($('#box4').html() === ""){
                     $('#box4').html(result);
                 }else{
+                    var replaced = $('#box1').html();
+                    var replacedid = $(replaced).attr('id');
+                    if (replacedid){
+                        var replacedstr = replacedid.slice(1).split("-");
+                        var replacedtype = replacedstr[0];
+                        var replacedn = replacedstr[1];
+                        if (replacedtype == "inode"){
+                            dispinode[replacedn] = 0;
+                        }
+                        else if (replacedtype == "data"){
+                            dispdata[replacedn] = 0;
+                        }
+                    }
                     $('#box1').html($('#box2').html());
                     $('#box2').html($('#box3').html());
                     $('#box3').html($('#box4').html());
                     $('#box4').html(result);
                 }
+                if (type === "inode")
+                    dispinode[n] = 1;
+                else if (type === "data")
+                    dispdata[n] = 1;
             }
+            
             var programs = createPrograms(fileSystem, writeLine, readLine, display);
             programs["shell"]();
             $(document).ready(function() {
@@ -105,7 +186,7 @@
                 });
                 $('body').on('click', '#blockpointer', function (){
                     var str = $(this).html().split(" ");
-                    if (fileSystem.getDataBlock(str[str.length - 1]).data != null)
+                    if (fileSystem.getDataBlock(str[str.length - 1]).data != "")
                         programs["display"](["block", str[str.length - 1]]);
                 });
 
@@ -119,9 +200,31 @@
                     $('link[href="stylesheets/'+css+'.css"').attr('href','stylesheets/beige.css');
                     css = "beige";
                 });
+                
                 $('body').on('click', '#cerise', function(){
                     $('link[href="stylesheets/'+css+'.css"').attr('href','stylesheets/cerise.css');
                     css = "cerise";
+                });
+                
+                $('body').on('click', '.hexbutton', function(){
+                    var id = this.id;
+                    var str = id.slice(1).split("-");
+                    var type = str[0];
+                    var n = str[1];
+                    var content = "";
+                    if (type === "inode" && hexinode[n]){
+                        hexinode[n] = 0;
+                        content = getData("#" + id.slice(1));
+                    }
+                    else if (type === "data" && hexdata[n]){
+                        hexdata[n] = 0;
+                        content = getData("#" + id.slice(1));
+                    } else {
+                        content = getHex(id);
+                        content = spaceHex(content);
+                    }
+                    content = content.replace(/\n/g, "<br>")
+                    replaceData("#"+type+"-"+n, content);
                 });
             });
         </script>

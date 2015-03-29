@@ -1,6 +1,6 @@
 body {
     color: #000000;
-    background: #91274C;
+    background: #ACE1AF;
     font-size: 14px;
     font-family: Courier New;
     line-height: 1.5;
@@ -46,6 +46,7 @@ a {
     |       | |              |
     |       | |              |
     |_______| |______________|
+
 */
 
 .wrapper {
@@ -65,6 +66,7 @@ a {
     float: left;
     padding-left: 10px;
 }
+
 
 .bitmapwrapper {
     height: 20%;
@@ -150,10 +152,9 @@ input {
     -moz-border-radius: 5px;
     border-radius: 5px;
     /* box-shadow */
-    -webkit-box-shadow: rgba(0,0,0,0.8) 0px 0 10px;
-    -moz-box-shadow: rgba(0,0,0,0.8) 0 0 10px;
-    box-shadow: rgba(0,0,0,0.8) 0 0 10px;
-
+    -webkit-box-shadow: rgba(50,20,10,1) 0px 0 10px;
+    -moz-box-shadow: rgba(50,20,10,1) 0 0 10px;
+    box-shadow: rgba(50,20,10,1) 0 0 10px;
 }
 
 
@@ -161,6 +162,7 @@ input {
     width:100%;
     height: 20px;
 }
+
 
 /*
     Box - contains datablocks and inodes
@@ -171,7 +173,7 @@ input {
     width:20%;
     float:left;
     margin-left:40px;
-    background: #BA2F5D;
+    background: #9C7A4B;
     color: #FFFFFF;
     font-size:16px;
     overflow: hidden;
@@ -182,7 +184,7 @@ input {
     Boxcontent - for usage within box
 */
 .boxcontent{
-    background: #DE4E72;
+    background: #BA9661;
     top:-10px;
     font-size: 12px;
     min-height: 430px;
@@ -203,26 +205,26 @@ input {
 
 .blockpointer{
     text-align: center;
-    color: #FAE1F1;
+    color: #F9E8D1;
     padding-top:2px;
     padding-bottom:2px;
 }
 
 .blockpointer:hover{
-    background: #EB3A6F;
+    background: #8C6938;
     color: #FFFFFF;
 }
 
 .odd{
-    background: #C84A67;
+    background: #B38F5D;
 }
 
 .even{
-    background: #BA3E67;
+    background: #9C7A4B;
 }
 
 .inode {
-  background: #D43461;
+  background: #D46C34;
 }
 
 /*Pop up menu*/
@@ -245,9 +247,9 @@ input {
     -moz-border-radius: 5px;
     border-radius: 5px;
     /* box-shadow */
-    -webkit-box-shadow: rgba(0,0,0,0.8) 0px 0 10px;
-    -moz-box-shadow: rgba(0,0,0,0.8) 0 0 10px;
-    box-shadow: rgba(0,0,0,0.8) 0 0 10px;
+    -webkit-box-shadow: rgba(50,20,10,1) 0px 0 10px;
+    -moz-box-shadow: rgba(50,20,10,1) 0 0 10px;
+    box-shadow: rgba(50,20,10,1) 0 0 10px;
     display: none;
     position: absolute;
     top: 10%;
@@ -256,12 +258,12 @@ input {
     height: 75%;
     padding: 16px;
     border: 4px black;
-    background-color: #CF638B;
+    background-color: #B09C7F;
     z-index:1002;
     overflow-y:scroll;
     font-size: 20px;
     font-weight: bold;
-    color: #DBCCD7;
+    color: #E8E3DC;
 }
 
 hgroup h1{
@@ -273,7 +275,7 @@ hgroup h1{
 hgroup h2{
     font-size:20px;
     font-style: normal;
-    color: #FFFFFF;
+    color: #383838;
 }
 
 .h3{
@@ -283,16 +285,16 @@ hgroup h2{
 }
 
 .tutbutton {
-	padding:7 25 7 25;
-	background-color:#874A65;
+    padding:7 25 7 25;
+    background-color:#7A5441;
 }
 
 .introlink {
-	color:#6E1637;
+    color:#614A35;
 }
 
 .helpfont {
-	color:#1C1017;
+    color: #453319;
 }
 
 /*
@@ -307,21 +309,21 @@ hgroup h2{
 }
 
 #tutorial{
-	color:#FFFFFF;
-	background:#CF638B;
-	margin: 30 70 20 70;
-	padding: 30 30 30 30;
-	font-size: 16;
-	font-weight: bold;
-	float: center;
-	text-align: center;
+    color:#FFFFFF;
+    background:#BD924D;
+    margin: 30 70 20 70;
+    padding: 30 30 30 30;
+    font-size: 16;
+    font-weight: bold;
+    float: center;
+    text-align: center;
 }
 
 .ext2title {
     font-size:30px;
     font-weight: bold;
     padding: 10 0 10 8;
-    color:#FFFFFF;
+    color:#000000;
 }
 
 /* From codeitdown.com/css-round-buttons/

@@ -8,7 +8,7 @@
  * @returns {DataBlock}
  */
 function DataBlock(blockNum) {
-    this.data = null;
+    this.data = "";
     this.blockNum = blockNum;
 };
 

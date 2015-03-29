@@ -381,7 +381,7 @@ FileSystem.prototype.listDirectory = function(path, currentDirectory) {
  * @returns {Array}
  */
 FileSystem.prototype.displayInode = function(n) {
-    var content = "<div class='hexbutton'>HEX</div><center><b>inode "+n+"</b></center>\
+    var content = "<div class='hexbutton' id='hinode-"+n+"'>HEX</div><center><b>inode "+n+"</b></center>\
                         <div class='boxcontent' id='inode-"+n+"'>";
     content += this.getInode(n).toDisplay();
     content += "</div>";
@@ -395,7 +395,7 @@ FileSystem.prototype.displayInode = function(n) {
  * @returns {String}
  */
 FileSystem.prototype.displayData = function(n) {
-    var content = "<div class='hexbutton'>HEX</div><center><b>block "+n+"</b></center>\
+    var content = "<div class='hexbutton' id='hdata-"+n+"'>HEX</div><center><b>block "+n+"</b></center>\
                         <div class='boxcontent data' id='data-"+n+"'>";
     content += this.getDataBlock(n).toDisplay();
     content += "</div>";
@@ -403,6 +403,8 @@ FileSystem.prototype.displayData = function(n) {
 }
 
 
+
+//Converts a number into two byte hex format
 function hexNum(number) {
 
 		if (number.length == 1 || number.length == 3)
@@ -413,3 +415,19 @@ function hexNum(number) {
 		return number;
 
 }
+
+//Converts a number into four byte hex format
+function hexNumFour(number) {
+		if (number.length == 1 || number.length == 3 || number.length == 5 || number.length == 7)
+			number = "0" + number;
+		if (number.length < 4)
+			number = "00" + number;
+		if (number.length < 6)
+			number = "00" + number;
+		if (number.length < 8)
+			number = "00" + number;
+		number = number.substring(6, 8) + number.substring(4, 6) + number.substring(2, 4) + number.substring(0, 2);
+		return number;
+
+}
+

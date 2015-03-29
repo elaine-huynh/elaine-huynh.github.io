@@ -359,36 +359,40 @@ Inode.prototype.toString = function(){
  * @returns {String}
  */
 Inode.prototype.toHex = function() {
-	var returnString =  this.type + "000";
+	var returnString =  "0" + this.type.toString() + "00";
 	var size = (this.size).toString(16);
-	var firstHalf = size.substring(size.length - 4, size.length);
-	var secondHalf = size.substring(0, size.length - 4);
+	var firstHalf = size.substring(size.length - 8, size.length);
+	var secondHalf = size.substring(0, size.length - 8);
 	//Amount of 512 blocks needed to store all Inode data
 	var iBlocks = Math.ceil(this.size / 512).toString(16);
-	returnString += hexNum(firstHalf);
-	for (var i = 0; i < 18; i++) {
-		returnString += 0;
+	returnString += "0000";
+	returnString += hexNumFour(firstHalf);
+	for (var i = 0; i < 36; i++) {
+		returnString += "0";
 	}
-	returnString += hexNum(this.linkCount.toString(16)).substring(0, 2);
-	returnString += hexNum(iBlocks);
-	for (var i = 0; i < 8; i++) {
-		returnString += 0;
+	returnString += hexNum(this.linkCount.toString(16));
+	returnString += hexNumFour(iBlocks);
+	for (var i = 0; i < 16; i++) {
+		returnString += "0";
 	}
 	for (var i = 0; i < 15; i++) {
 		if (this.blockPointer[i] != 0)
 			var newString = (this.getNthBlock(i)).toString(16);
 		else
-			var newString = "0"
-		returnString += hexNum(newString);
+			var newString = "0000";
+		returnString += hexNumFour(newString);
 	}
-	returnString += "00000000";
-	secondHalf = hexNum(secondHalf);
-	if (secondHalf.length == 4)
+	for (var i = 0; i < 16; i++) {
+		returnString += "0";
+	}
+	secondHalf = hexNumFour(secondHalf);
+	if (secondHalf == 8)
 		returnString += secondHalf;
 	else
-		returnString += "0000";
-	for (var i = 0; i < 16; i++) {
-		returnString += 0;
+		returnString += "00000000";
+		
+	for (var i = 0; i < 32; i++) {
+		returnString += "0";
 	}
 	return returnString;
 };
