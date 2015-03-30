@@ -14,11 +14,29 @@
  */
 function createPrograms(fileSystem, writeLine, readLine, display) {
     var currentInode = 2;
+    var currentPath = '/';
     var programs = {};
 
     function split(path) {
         var parts = path.split("/").filter(function (x) { return x !== ""; });
         return { name: parts.pop(), path: parts.join("/") };
+    }
+    
+    function normalize(path) {
+        var stack = [];
+        path.split('/').forEach(function (part) {
+            if (part === '.' || part == '')
+                return;
+            if (part === '..')
+                stack.pop();
+            else
+                stack.push(part);
+        });
+        return '/' + stack.join('/');
+    }
+
+    programs["pwd"] = function (args) {
+        writeLine(currentPath);
     }
 
     programs["ls"] = function (args) {
@@ -48,7 +66,13 @@ function createPrograms(fileSystem, writeLine, readLine, display) {
 
         var name = args.length === 0 ? "/" : args[0];
         try {
+            if (name[0] === "/") {
+                currentInode = 2;
+                currentPath = "/";
+            }
+
             currentInode = fileSystem.getInodeFromPath(name + "/", currentInode);
+            currentPath = normalize(currentPath + "/" + name);
         } catch (e) {
             writeLine("cd: " + e.message);
         }

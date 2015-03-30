@@ -377,7 +377,7 @@ Inode.prototype.toHex = function() {
 	}
 	for (var i = 0; i < 15; i++) {
 		if (this.blockPointer[i] != 0)
-			var newString = (this.getNthBlock(i)).toString(16);
+			var newString = (this.blockPointer[i]).toString(16);
 		else
 			var newString = "0000";
 		returnString += hexNumFour(newString);

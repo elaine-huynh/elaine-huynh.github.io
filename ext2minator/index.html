@@ -197,8 +197,8 @@
 						console.log("step 19");
 						$('#tutorial').html("Well done! Now that we've covered all the basics, you're " +
 											"ready to experiment on your own.<br><br>" +
-											"Don't forget: you can enter \"help\" in the shell if you need to see a list of commands available to you!<br><br>" +
-											"<a href='ext2minator.html' class='window tutbutton'>continue</a>");
+											"Don't forget: you can enter \"help\" in the shell if you need to see a list of commands available to you!<br><br><i>Press the button to leave the tutorial.</i><br><br>" +
+											"<a href='ext2minator.html' class='window tutbutton'>exit</a>");
 						break;
 				}
 			}
@@ -301,27 +301,46 @@
                 });
 
                 // Colour scheme stuff:
-                var css = "blue";
-                $('body').on('click', '#original', function(){
-                    $('link[href="stylesheets/'+css+'.css"').attr('href','stylesheets/blue.css');
-                    css = "blue";
+                $('.round-button').on('click', function () {
+                    var color = $(this).attr('id');
+                    var oldStylesheet = $('link[rel="stylesheet"]');
+                    $('head').append('<link rel="stylesheet" type="text/css" media="screen" href="stylesheets/' + color + '.css">');
+                    // Force repaint on Chrome.
+                    $(this).hide().show(0);
+                    
+                    // Chrome flickers without this.
+                    setTimeout(function () { oldStylesheet.remove(); }, 1);
                 });
-                $('body').on('click', '#beige', function(){
-                    $('link[href="stylesheets/'+css+'.css"').attr('href','stylesheets/beige.css');
-                    css = "beige";
-                });
-                $('body').on('click', '#cerise', function(){
-                    $('link[href="stylesheets/'+css+'.css"').attr('href','stylesheets/cerise.css');
-                    css = "cerise";
+                $('body').on('click', '.hexbutton', function(){
+                    var id = this.id;
+                    var str = id.slice(1).split("-");
+                    var type = str[0];
+                    var n = str[1];
+                    var content = "";
+                    if (type === "inode" && hexinode[n]){
+                        hexinode[n] = 0;
+                        content = getData("#" + id.slice(1));
+                    }
+                    else if (type === "data" && hexdata[n]){
+                        hexdata[n] = 0;
+                        content = getData("#" + id.slice(1));
+                    } else {
+                        content = getHex(id);
+                        content = spaceHex(content);
+                    }
+                    content = content.replace(/\n/g, "<br>")
+                    replaceData("#"+type+"-"+n, content);
                 });
             });
         </script>
     </head>
     <body>
 	<div style="float:right">
+        <div class="round-button" id="dark" style="background:#000000"></div>
+        <div class="round-button" id="grey" style="background:#B8B8B8"></div>
         <div class="round-button" id="beige" style="background:#BA9661"></div>
         <div class="round-button" id="cerise" style="background:#C42150"></div>
-        <div class="round-button" id="original" style="background:#2D72B3"></div>
+        <div class="round-button" id="blue" style="background:#2D72B3"></div>
 	</div><br>
     <div style="height:60%">
 		<div id="tutorial" class="window">
@@ -350,6 +369,7 @@
                                             <span class ="helpfont">$ rm [-r] [directory]</span> : Removes directory<br>
                                             <span class ="helpfont">$ ls [path]</span> : Lists all the directories and files <br>
                                             <span class ="helpfont">$ ln [source] [destination]</span> : Creates a link <br>
+                                            <span class ="helpfont">$ pwd</span> : Displays the current working directory <br>
                                             <span class ="helpfont">$ help</span> : Display a list of available commands <br>
          <br> <a href = "javascript:void(0)" onclick = "document.getElementById('light').style.display='none';
          document.getElementById('fade').style.display='none'" class="window tutbutton">Close</a></div>
@@ -363,7 +383,7 @@
                         <div class="shelloutput" id="shell">
                         </div>
                         <div class="shellcommand">
-                            $ <input class="command" type="text" name="q" placeholder="Enter command">
+                            $ <input class="command" type="text" name="q" placeholder="Enter command" autocomplete="off">
 							<a href="#" onclick = "document.getElementById('light').style.display='block';
 							document.getElementById('fade').style.display='block'" style="font-weight:bold; 
 							float:right; font-size:15">?</a>
