@@ -17,6 +17,7 @@ function Bitmap(size) {
     for (var i = 0; i < size; i++) {
         this.map[i] = 0;
     };
+    this.available = size;
 };
 
 /**
@@ -38,6 +39,7 @@ Bitmap.prototype.findUnallocatedBit = function() {
  */
 Bitmap.prototype.allocateBit = function(bit) {
     this.map[bit] = 1;
+    this.available--;
     // Modify the superblock
 };
 
@@ -49,6 +51,7 @@ Bitmap.prototype.allocateBit = function(bit) {
 Bitmap.prototype.unallocateBit = function(bit) {
     this.map[bit] = 0;
     // Modify the superblock
+    this.available++;
 };
 
 Bitmap.prototype.display = function(){

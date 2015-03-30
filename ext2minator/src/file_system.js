@@ -259,6 +259,10 @@ FileSystem.prototype.createFile = function(name, size, path, currentDirectory) {
     if (currentInode.getInodeInDirectory(name) !== errorInodeDoesNotExist)
         throw new AlreadyExistsError(name);
 
+    var required = getBlockRequired(size);
+    if (this.blockBitmap.available < required)
+        throw new NotEnoughSpaceError(name);
+
     var newInodeNumber = this.allocateInode();
     var newInode = this.getInode(newInodeNumber);
 
@@ -403,6 +407,9 @@ FileSystem.prototype.displayData = function(n) {
 }
 
 
+FileSystem.prototype.blockAllocated = function(n) {
+    return this.blockBitmap.map[n] == 1;
+}
 
 //Converts a number into two byte hex format
 function hexNum(number) {
@@ -429,5 +436,28 @@ function hexNumFour(number) {
 		number = number.substring(6, 8) + number.substring(4, 6) + number.substring(2, 4) + number.substring(0, 2);
 		return number;
 
+}
+
+/**
+ * Calculate how many blocks are needed given a size (accounts for indirect
+ * pointers).
+ *
+ * @param {Integer} size
+ * @returns {Integer} result
+ */
+function getBlockRequired(size){
+    var single = Math.ceil(size/pageSize);
+    var intoIndirect = single - 12;
+    var indirect = intoIndirect > 0 ? Math.ceil(intoIndirect/(pageSize/4)) : 0;
+    var intoDouble = indirect - 1;
+    var doubleIndirect = intoDouble > 0? Math.ceil(intoDouble/(pageSize/4)) : 0;
+    var intoTriple = doubleIndirect - 1;
+    var tripleIndirect = intoTriple > 0? Math.ceil(intoTriple/(pageSize/4)) : 0;
+    var leftover = 0;
+    if (doubleIndirect)
+        leftover ++;
+    if (tripleIndirect)
+        leftover ++;
+    return single+indirect+doubleIndirect+tripleIndirect + leftover;
 }
 

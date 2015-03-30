@@ -27,3 +27,9 @@ function RemovingReservedError(name) {
 function AlreadyExistsError(name) {
     this.message = name + ": the file or directory already exists";
 }
+
+function NotEnoughSpaceError(name){
+    this.message = name + ": File system is too full.";
+}
+
+

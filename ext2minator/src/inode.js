@@ -69,6 +69,36 @@ Inode.prototype.unallocateAll = function() {
         var dataBlock = this.getNthBlock(i);
         this.fileSystem.unallocateDataBlock(dataBlock);
 	}
+    // Unallocate all the indirect block pointers
+    var doubleIndirect = this.blockPointer[13];
+    if (doubleIndirect > 0){
+        var doubleIndirectData = this.fileSystem.getDataBlock(doubleIndirect);
+        for (var i = 0; i < doubleIndirectData.data.length; i++){
+            var single = doubleIndirectData.getEntry(i);
+            if (single)
+                this.fileSystem.unallocateDataBlock(single);
+        }
+    }
+
+    // Unallocate all the double indirect pointers
+    var tripleIndirect = this.blockPointer[14];
+    if (tripleIndirect > 0){
+        var tripleIndirectData = this.fileSystem.getDataBlock(tripleIndirect);
+        for (var i = 0; i < tripleIndirectData.data.length; i++){
+            var twouble = tripleIndirectData.getEntry(i);
+            if (twouble){
+                var doubleIndirect = this.fileSystem.getDataBlock(twouble);
+                for (var j = 0; j < doubleIndirect.data.length; j++){
+                    var single = doubleIndirect.getEntry(j);
+                    if (single)
+                        this.fileSystem.unallocateDataBlock(single);
+                }
+                this.fileSystem.unallocateDataBlock(twouble);
+            }
+        }
+    }
+
+    
     for (var i = 0; i < 15; i++) {
       var pointer = this.blockPointer[i];
       if (pointer != 0)
@@ -158,7 +188,8 @@ Inode.prototype.setNthBlock = function(n, blockNumber){
         // Triply
         if (n < singleIndirectPages + 12){
             // If no block pointer is assigned yet, create one
-            if (this.blockPointer[12] === 0){
+            var allocated = this.fileSystem.blockAllocated(this.blockPointer[12]);
+            if (this.blockPointer[12] === 0 || !allocated){
                 var newPage = this.fileSystem.allocateDataBlock();
                 this.blockPointer[12] = newPage;
 		        this.fileSystem.setDataBlock(newPage, new IndirectData());
@@ -172,7 +203,8 @@ Inode.prototype.setNthBlock = function(n, blockNumber){
             return singleIndirect.setEntry(entry, blockNumber);
         }
         else if (n < doubleIndirectPages + 12){
-            if (this.blockPointer[13] === 0){
+            var allocated = this.fileSystem.blockAllocated(this.blockPointer[13]);
+            if (this.blockPointer[13] === 0 || !allocated){
                 var newPage = this.fileSystem.allocateDataBlock();
                 this.blockPointer[13] = newPage;
 		        this.fileSystem.setDataBlock(newPage, new IndirectData());
@@ -195,10 +227,9 @@ Inode.prototype.setNthBlock = function(n, blockNumber){
             return singleIndirect.setEntry(singleEntry, blockNumber);
         }
         else{
-            if (this.blockPointer[14] === 0){
+            var allocated = this.fileSystem.blockAllocated(this.blockPointer[14]);
+            if (this.blockPointer[14] === 0 || !allocated){
                 var newPage = this.fileSystem.allocateDataBlock();
-                console.log(newPage);
-                console.log(this.fileSystem.allocateDataBlock());
                 this.blockPointer[14] = newPage;
 		        this.fileSystem.setDataBlock(newPage, new IndirectData());
             }
