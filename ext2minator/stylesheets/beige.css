@@ -187,7 +187,7 @@ input {
     Boxcontent - for usage within box
 */
 .boxcontent{
-    color: black;
+    color: white;
     background: #BA9661;
     top:-10px;
     font-size: 12px;
