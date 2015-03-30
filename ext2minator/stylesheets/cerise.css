@@ -82,7 +82,8 @@ a {
     Shell code
 */
 .shellbox {
-    background: #CDCDCD;
+    background: #AD375F;
+    color: white;
     height:auto;
     width:auto;
     overflow: hidden;
@@ -126,7 +127,8 @@ input {
 */
 
 .bitmap {
-    background: #CDCDCD;
+    color: white;
+    background: #AD375F;
     width: 40%;
     margin-right: 10px;
     margin-left: 10px;
@@ -135,7 +137,8 @@ input {
 }
 
 .bitmapcontent{
-    background:#B6B6B6;
+    color: black;
+    background:#E86888;
     overflow-y: auto;
     overflow-x: hidden;
     word-wrap:break-word;
