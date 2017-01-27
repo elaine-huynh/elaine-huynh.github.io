@@ -99,12 +99,12 @@ of those sections to manage the look and feel of the site. */
 }
 
 .project-list * img {
-    max-width: 100%;
+    max-width: 95%;
     transition: transform .3s;
 }
 
 .project-list * img:hover {
-    max-width: 100%;
+    max-width: 95%;
     transition: transform .3s;
     transform: scale(1.05);
 
