@@ -90,6 +90,8 @@ of those sections to manage the look and feel of the site. */
     list-style-type: none;
     max-width: 100%;
     overflow: none;
+    text-align: center;
+    padding: 0;
 }
 
 .project-list > li {
